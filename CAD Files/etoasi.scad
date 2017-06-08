@@ -12,7 +12,7 @@ c_dia = 25.4;
 filter_dia = 36.0;
 filter_t = 2.0;
  
-emh_dia = 59.0 + 2 * 2.0;
+emh_dia = 59.0 + 2 * 3.0;
 emh_h = 5.0 + 0.4;
 
 em_bf = 18.0;
@@ -21,7 +21,7 @@ bf_tol = 0.5;
  
 em_inner_dia = 41.4; // of the lens
 emb_upper_dia = 47.2;
-emb_lower_dia = 46.3;
+emb_lower_dia = 46.0;
  
 asi_dia = 62.0;
 asi_h = 28.0;
@@ -35,20 +35,21 @@ em_sh = zw_sh / 2;
 epch_dia = t_dia - 2 * 1.0;
 epch_h = asi_t_h - 0.5;
 ovl_h = epch_h;
+lsh = 5.0;
 fs_dia = 4.0; // knurled fixation screws M4
- 
+
 module e2t()
 {
 	h1=1.4;
-	h2=2.0;
+	h2=2.3;
 	t1=1.3;
-	dist1=1.3;
+	dist1=1.6;
 	a1=43; // angles
-	a2=54;
-	a3=80;
+	a2=64;
+	a3=57;
 	a4=62;
-	a5=57;
-	//a6=65;
+	a5=80;
+	//a6=54;
 	a7=6; // orientation marker
 	b1=2.5;
 	
@@ -113,14 +114,20 @@ difference()
 	difference() // overlap
 		{
 			cylinder(d=emh_dia, h=(ovl_h), center=true);
-			cylinder(d=asi_t_dia + 2 * 0.75, h=(ovl_h)+0.1, center=true);
+			cylinder(d=asi_t_dia + 2 * 0.3, h=(ovl_h)+0.1, center=true);
 			for (i=[0:2]) // camera fixation screws
 				{
 					rotate([0,0,i*120])
-					translate([0,((asi_t_dia + 2 * 0.75)/2+(emh_dia)/2)/2,0])
+					translate([0,((asi_t_dia + 2 * 0.3)/2+(emh_dia)/2)/2,0])
 					rotate([90,0,0])
-					cylinder(d=fs_dia*0.8, h=(emh_dia)/2-(asi_t_dia + 2 * 0.75)/2+1, center=true);
+					cylinder(d=fs_dia*0.8, h=(emh_dia)/2-(asi_t_dia + 2 * 0.3)/2+1, center=true);
 				}
+		}
+	translate([0,0,-(ovl_h)-3/2])
+	difference() 
+		{
+			 cylinder(d=emh_dia, h=lsh, center=true);
+			 cylinder(d=asi_dia+2*0.3, h=lsh+0.1, center=true);
 		}
 }
  
@@ -149,8 +156,8 @@ module asi()
 difference()
 {
 	union()
-			translate([0,0,0]) e2t();
 		{
+			color("darkblue") e2t();
 			//*color("grey") translate([0,0,-zw_h/2]) t2c();
 			*color("darkred") translate([0,0,-asi_h/2 - asi_t_h - 0.2]) asi();
 		}
