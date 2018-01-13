@@ -1,6 +1,7 @@
 //----------------------------------------------------------------------------------------------------------------------
 // Customization Parameters:
- 
+// Specify which part to print to a STL file:
+print_part = "all"; // "all", "backholder", "asiholder"
 //----------------------------------------------------------------------------------------------------------------------
  
 min_wt = 3.0;
@@ -35,10 +36,18 @@ em_sh = zw_sh / 2;
 epch_dia = t_dia - 2 * 1.0;
 epch_h = asi_t_h - 0.5;
 ovl_h = epch_h;
-lsh = 5.0;
+lsh = emh_h;
 fs_dia = 4.0; // knurled fixation screws M4
 
-module e2t()
+// holder dimensions:
+sn_sw = 7.0; // M4 screw nut dimensions
+sn_h = 3.2 + 0.3; // includes tolerance!
+holder_screw = 4.0; // M4 screw for holder
+sn_hole = holder_screw + 0.5;
+holder_ear_dia = 2*(sn_sw*2)/sqrt(3);
+sn_slot_l = holder_ear_dia/2 + 10.0;
+
+module asiholder()
 {
 	h1=1.4;
 	h2=2.3;
@@ -126,8 +135,26 @@ difference()
 	translate([0,0,-(ovl_h)-3/2])
 	difference() 
 		{
-			 cylinder(d=emh_dia, h=lsh, center=true);
+			 union()
+				{
+					cylinder(d=emh_dia, h=lsh, center=true);
+					for (i=[0:2]) // holder ears
+						{
+							rotate([0,0,i*120]) translate([emh_dia/2,0,0]) cylinder(d=holder_ear_dia, h=lsh, center=true);
+						}
+				}
+			 
 			 cylinder(d=asi_dia+2*0.3, h=lsh+0.1, center=true);
+			 for (i=[0:2]) // holder screw holes
+				{
+					rotate([0,0,i*120]) translate([emh_dia/2 + sn_hole/2 + 1.0,0,0])
+					union()
+						{
+							cylinder(d=sn_hole, h=lsh+0.1, center=true);
+							cylinder(d=(sn_sw*2)/sqrt(3), h=sn_h, center=true, $fn=6); // screw nut
+							translate([sn_slot_l/2,0,0]) rotate([0,90,90]) cube([sn_h,sn_slot_l,sn_sw], center=true); // slot
+						}
+				}
 		}
 }
  
@@ -141,7 +168,37 @@ module t2c()
 			translate([0,-(t_dia+c_dia)/2/2,0]) cylinder(d=zw_sh, h=zw_h+0.1, center=true); //     -"-
 		}
 }
+
+//----- backholder -----
+bh_h = 4.0;
+bh_outer_dia = emh_dia+1;
+bh_inner_dia = asi_dia - 2 * 2.0;
+bh_asi_ovl = 2.0;
  
+module backholder()
+{
+	difference()
+		{
+			union()
+				{
+					cylinder(d=bh_outer_dia, h=bh_h, center=true);
+					for (i=[0:2]) // holder ears
+						{
+							rotate([0,0,i*120]) translate([emh_dia/2,0,0]) cylinder(d=holder_ear_dia, h=bh_h, center=true);
+						}
+				}
+			
+			translate([0,0,0]) cylinder(d=bh_inner_dia, h=bh_h+0.1, center=true);
+			translate([0,0,bh_asi_ovl]) cylinder(d=asi_dia+2*0.3, h=bh_h+0.1, center=true);
+			for (i=[0:2]) // holder screw holes
+				{
+					rotate([0,0,i*120]) translate([emh_dia/2 + sn_hole/2 + 1.0,0,0])
+					cylinder(d=sn_hole, h=bh_h+0.1, center=true);
+				}
+		}
+}
+//----- end backholder -----
+
 module asi()
 {
 	cylinder(d=asi_dia, h=asi_h, center=true);
@@ -152,15 +209,31 @@ module asi()
 			translate([0,0,0.1/2]) cylinder(d=t_dia, h=asi_t_h+0.1, center=true);
 		}
 }
- 
+
 difference()
 {
 	union()
 		{
-			color("darkblue") e2t();
+			color("darkblue") asiholder();
 			//*color("grey") translate([0,0,-zw_h/2]) t2c();
-			*color("darkred") translate([0,0,-asi_h/2 - asi_t_h - 0.2]) asi();
+			//*color("darkred") translate([0,0,-asi_h/2 - asi_t_h - 0.2]) asi();
+			translate([0,0,-asi_h - asi_t_h - 0.2    +bh_asi_ovl]) backholder();
 		}
+	// hide the irrelevant part:
+		if (print_part != "all")
+		{
+			if (print_part == "backholder")
+			{
+				translate([0,0,100/2-20]) cube([100,100,100], center=true);
+			}
+			if (print_part == "asiholder")
+			{
+				translate([0,0,-100/2-20]) cube([100,100,100], center=true);
+			}
+			
+		}	
+
+	
 	*translate([0,0,-50]) cube([100,100,100]);
 }
  
