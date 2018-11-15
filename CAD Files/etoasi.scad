@@ -1,12 +1,12 @@
 //----------------------------------------------------------------------------------------------------------------------
 // Customization Parameters:
 // Specify which part to print to a STL file:
-print_part = "all"; // "all", "backholder", "asiholder"
+print_part = "backholder"; // "all", "backholder", "asiholder"
 //----------------------------------------------------------------------------------------------------------------------
  
 min_wt = 3.0;
 $fn=300;
- 
+
 t_dia = 42.0;
 epc_dia = 25.4 * 1.25;
 c_dia = 25.4;
@@ -46,6 +46,16 @@ holder_screw = 4.0; // M4 screw for holder
 sn_hole = holder_screw + 0.5;
 holder_ear_dia = 2*(sn_sw*2)/sqrt(3);
 sn_slot_l = holder_ear_dia/2 + 10.0;
+
+THREAD_M4 = 4.0;
+
+module KnurledScrew_Nylon_M4(length)
+{
+	head_length = 8.1;
+	head_dia = 10.5;
+	translate([0,0,-length/2]) cylinder(d=THREAD_M4, h=length, center=true); // thread
+	translate([0,0,head_length/2]) cylinder(d=head_dia, h=head_length, center=true); // head
+}
 
 module asiholder()
 {
@@ -170,13 +180,14 @@ module t2c()
 }
 
 //----- backholder -----
-bh_h = 4.0;
+bh_h = 6.0;
 bh_outer_dia = emh_dia+1;
 bh_inner_dia = asi_dia - 2 * 2.0;
 bh_asi_ovl = 2.0;
  
 module backholder()
 {
+	distanceholder=0.5;
 	difference()
 		{
 			union()
@@ -185,16 +196,19 @@ module backholder()
 					for (i=[0:2]) // holder ears
 						{
 							rotate([0,0,i*120]) translate([emh_dia/2,0,0]) cylinder(d=holder_ear_dia, h=bh_h, center=true);
+							rotate([0,0,i*120]) translate([emh_dia/2 + sn_hole/2 + 1.0,0,-(bh_h+distanceholder-0.1)/2]) cylinder(d=sn_hole+2*2.0, h=distanceholder+0.1, center=true);
 						}
 				}
 			
 			translate([0,0,0]) cylinder(d=bh_inner_dia, h=bh_h+0.1, center=true);
-			translate([0,0,bh_asi_ovl]) cylinder(d=asi_dia+2*0.3, h=bh_h+0.1, center=true);
-			for (i=[0:2]) // holder screw holes
+			translate([0,0,(bh_h - bh_asi_ovl)]) cylinder(d=asi_dia+2*0.3, h=bh_h+0.1, center=true);
+			#for (i=[0:2]) // holder screw holes
 				{
-					rotate([0,0,i*120]) translate([emh_dia/2 + sn_hole/2 + 1.0,0,0])
-					cylinder(d=sn_hole, h=bh_h+0.1, center=true);
+					rotate([0,0,i*120]) translate([emh_dia/2 + sn_hole/2 + 1.0,0,-1.0/2])
+					cylinder(d=sn_hole, h=bh_h+distanceholder+1.0, center=true);
 				}
+			// cut-out for USB connector:
+			translate([-(bh_outer_dia/2),0,(bh_h-bh_asi_ovl+0.5)/2]) cube([20,15,bh_asi_ovl], center=true);
 		}
 }
 //----- end backholder -----
@@ -230,10 +244,13 @@ difference()
 			{
 				translate([0,0,-100/2-20]) cube([100,100,100], center=true);
 			}
-			
-		}	
+		}
+		else
+		{
+			translate([43,0,-6]) rotate([0,0,0]) KnurledScrew_Nylon_M4(30);
+		}
 
 	
-	*translate([0,0,-50]) cube([100,100,100]);
+	//translate([0,0,-50]) cube([100,100,100]);
 }
  
