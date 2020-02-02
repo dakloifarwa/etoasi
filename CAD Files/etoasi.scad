@@ -180,10 +180,10 @@ module t2c()
 }
 
 //----- backholder -----
-bh_h = 6.0;
+bh_h = 12.0;
 bh_outer_dia = emh_dia+1;
 bh_inner_dia = asi_dia - 2 * 2.0;
-bh_asi_ovl = 2.0;
+bh_asi_ovl = bh_h - 4.0;
  
 module backholder()
 {
